@@ -21,6 +21,8 @@ public class Property {
     private String house_number;
     private String house_street;
     private String zip_code;
+    @OneTOMany
+    ptivate Set<Complaint> complaints;
 
     public Property() {
     }
