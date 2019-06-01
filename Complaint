@@ -24,6 +24,4 @@ public class Complaint {
     private String special_district;
     private String status;
     private String unit;
-    @ManyToOne
-    private Property property;
 }
