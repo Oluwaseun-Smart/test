@@ -1,0 +1,29 @@
+package com.replatform.entities;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import javax.persistence.*;
+
+@Data
+@AllArgsConstructor
+@Entity
+public class Complaint {
+
+    @Id
+    @GeneratedValue( strategy = GenerationType.AUTO )
+    private Long id;
+    private String complainNumber;
+    private String community_board;
+    private String complaint_category;
+    private String date_entered;
+    private String disposition_code;
+    private String disposition_date;
+    private String dobrundate;
+    private String inspection_date;
+    private String special_district;
+    private String status;
+    private String unit;
+    @ManyToOne
+    private Property property;
+}
