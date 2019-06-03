@@ -1,0 +1,65 @@
+package com.oos.REPlatformBE.batch;
+
+import com.oos.REPlatformBE.entities.Complaint;
+import com.oos.REPlatformBE.entities.Property;
+import com.oos.REPlatformBE.entities.Record;
+import com.oos.REPlatformBE.services.PropertyService;
+import com.oos.REPlatformBE.utils.Util;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+
+@Component
+public class DBWriter implements ItemWriter<Record> {
+
+    @Autowired
+    private PropertyService propertyService;
+
+    private int total = 0;
+
+    @Override
+    public void write(List<? extends Record> records) throws Exception {
+
+        List<Property> properties = new LinkedList<>();
+
+        Map<Property, Set<Complaint>> propertyComplaintMap = new HashMap<>();
+
+        System.out.println("Data Saved for record: " + records.size());
+
+        total += records.size();
+
+        System.out.println(total);
+        // Processing the records
+        for (Record record : records) {
+            Property property = propertyService.findByBin(record.getBin());
+            if (property != null) {
+                Complaint complaint = new Complaint(record.getBin(), record.getComplainNumber(), record.getCommunity_board(), record.getComplaint_category(), record.getDate_entered(), record.getDisposition_code(), record.getDisposition_date(), record.getDobrundate(), record.getInspection_date(), record.getSpecial_district(), record.getStatus(), record.getUnit());
+                property.getComplaints().add(complaint);
+                properties.add(property);
+            } else {
+                Set<Complaint> complaints = new HashSet<>();
+                Property newProperty = new Property(record.getBin(), Util.getCurrentDate(), record.getHouse_number(), record.getHouse_street(), record.getZip_code(), null);
+                Complaint complaint = new Complaint(record.getBin(), record.getComplainNumber(), record.getCommunity_board(), record.getComplaint_category(), record.getDate_entered(), record.getDisposition_code(), record.getDisposition_date(), record.getDobrundate(), record.getInspection_date(), record.getSpecial_district(), record.getStatus(), record.getUnit());
+                if (propertyComplaintMap.containsKey(newProperty)) {
+                    propertyComplaintMap.get(newProperty).add(complaint);
+                } else {
+                    complaints.add(complaint);
+                    propertyComplaintMap.put(newProperty, complaints);
+                }
+            }
+        }
+        //
+        for (Map.Entry<Property, Set<Complaint>> entry : propertyComplaintMap.entrySet()) {
+            Property listOfNewProperties = entry.getKey();
+            listOfNewProperties.setComplaints(entry.getValue());
+            properties.add(listOfNewProperties);
+        }
+
+        propertyService.save(properties);
+
+        System.out.println("Done!!!");
+    }
+}
+
